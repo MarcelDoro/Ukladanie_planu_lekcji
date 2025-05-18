@@ -1,15 +1,7 @@
 #include <iostream>
+#include <map>
 
 using namespace std;
-
-struct Nauczyciel
-{
-    string im="";
-    string nazw="";
-    string przedmiot="";
-    int ilpozgodz=0;
-    Nauczyciel *nast=NULL;
-};
 
 struct Lekcja
 {
@@ -17,7 +9,14 @@ struct Lekcja
     string przedmiot="";
 };
 
-
+class PlanLekcji
+{
+private:
+    map<string, map<string, map<int,Lekcja>>> Plan;
+public:
+    PlanLekcji(); /// konstruktor
+    ~PlanLekcji(); /// destruktor
+};
 
 int main(){
     cout<<"HI"<<endl;
