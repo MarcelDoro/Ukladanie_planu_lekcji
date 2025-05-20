@@ -1,6 +1,9 @@
 #include <iostream>
 #include <map>
 #include <fstream>
+#include <ctime>
+#include <vector>
+#include <iomanip>
 
 using namespace std;
 
@@ -21,10 +24,10 @@ struct ListaNauiPrzed /// lista nauczycieli
 };
 
 int ilklas=0; /// ilosc klas
-map <string,map<string,map<string,int>>> IlLekwKl={}; /// mapa przedstawiajaca ilosc godzin danego nauczyciela danego przedmiotu w danej klasie
-ListaNauiPrzed *pierwszy=NULL;
+ListaNauiPrzed *pierwszy=NULL; /// wskaźnik do pierwszego nauczyciela
+vector <string> Klasy;
 
-void OdczytZpliku() // CO Z NAZWAMI SKLADAJACYMY SIE Z 2 WYRAZOW np: WYCHOWANIE FIZYCZNE
+void OdczytZpliku(bool p=true) // CO Z NAZWAMI SKLADAJACYMY SIE Z 2 WYRAZOW np: WYCHOWANIE FIZYCZNE
 {
     ifstream plik;
     plik.open("dane.txt");
@@ -35,12 +38,13 @@ void OdczytZpliku() // CO Z NAZWAMI SKLADAJACYMY SIE Z 2 WYRAZOW np: WYCHOWANIE 
         string dane;
         while(plik>>dane) /// wczytuj dopoki sa dane
         {
-            string klasa="";
             if(dane.size()==2 && (dane[0]>='1' && dane[0]<='9') && ((dane[1]>='A' && dane[1]<='Z') || (dane[1]>='a' && dane[1]<='z'))) /// jezeli znazleziono klase
             {
-                cout<<dane<<endl;
-                klasa=dane;
-                ilklas++;
+                if(p==true)
+                {
+                    Klasy.push_back(dane); /// dodaj na koncu wektora nowa klase
+                    ilklas++;
+                }
             }
             else /// jezeli sa dane jakiego nauczyciela
             {
@@ -66,7 +70,6 @@ void OdczytZpliku() // CO Z NAZWAMI SKLADAJACYMY SIE Z 2 WYRAZOW np: WYCHOWANIE 
                     plik>>Info->przedmiot;
                     plik>>Info->Il;
                 }
-                IlLekwKl[klasa][Info->ImiNaz][Info->przedmiot]++; /// ilosc godzin danego nauczyciela danego przedmiotu w danej klasie
             }
         }
     }
@@ -78,6 +81,7 @@ void OdczytZpliku() // CO Z NAZWAMI SKLADAJACYMY SIE Z 2 WYRAZOW np: WYCHOWANIE 
 void WypiszListeNaucz()
 {
     ListaNauiPrzed *rob=pierwszy;
+
     while (rob!=NULL)
     {
         cout<<rob->ImiNaz<<" "<<rob->przedmiot<<" "<<rob->Il;
@@ -87,9 +91,76 @@ void WypiszListeNaucz()
 
 }
 
+string DniTyg[5]={"Poniedziałek","Wtorek","Środa","Czwartek","Piątek"};
+
+map <string,map<string,map<int,Lekcja>>> StworzPlan() /// funckja tworzaca plan lekcji
+{
+    map <string,map<string,map<int,Lekcja>>> Plan={}; /// mapa przedstawiajaca plan lekcji [klasa][dzien][numer lekcji]
+    ListaNauiPrzed *rob=pierwszy;
+
+    while (rob!=NULL)
+    {
+        while (rob->Il>0)
+        {
+            int nrkl=rand()%ilklas; /// losuj klasę
+            int nrdnia=rand()%5; /// losuj dzień tygodnia
+            int nrlek=rand()%MaksIlGodz; /// losuj numer lekcji
+            while(Plan[Klasy[nrkl]][DniTyg[nrdnia]][nrlek].nauczyciel!="") /// dopoki na wylosowanym miejscu ktoś sie znajduje to losuj dalej
+            {
+                nrkl=rand()%ilklas;
+                nrdnia=rand()%5;
+                nrlek=rand()%MaksIlGodz;
+            }
+
+            Plan[Klasy[nrkl]][DniTyg[nrdnia]][nrlek].nauczyciel=rob->ImiNaz; /// na puste miejsce wstaw im i naz wylosowanego nauczyciela
+            Plan[Klasy[nrkl]][DniTyg[nrdnia]][nrlek].przedmiot=rob->przedmiot; /// na puste miejsce wstaw przedmiot wylosowanego nauczyciela
+            rob->Il=rob->Il-1;
+        }
+        rob=rob->nast;
+    }
+    
+
+    OdczytZpliku(false); /// przywróci nauczycielem ich liczbę godzin ponieważ po tej funkcji rob->Il=0 dla kazdego nauczyciela ponieważ robimy rob->Il--;
+    return Plan;
+}
+
+void WypiszPlan(map <string,map<string,map<int,Lekcja>>> Plan)
+{
+    for(int i=0;i<ilklas;i++)
+    {
+        cout<<"====================================================Oto plan klasy "<<Klasy[i]<<"===================================================="<<endl;
+        cout<<"   ";
+        for(int j=0;j<5;j++) cout<<left<<setw(22)<<DniTyg[j];
+        cout<<endl;
+        for(int j=0;j<MaksIlGodz;j++)
+        {
+            cout<<j<<". ";
+            for(int k=0;k<5;k++)
+            {
+                if(Plan[Klasy[i]][DniTyg[k]][j].nauczyciel=="") cout<<left<<setw(22)<<"Brak";
+                else cout<<left<<setw(22)<<Plan[Klasy[i]][DniTyg[k]][j].nauczyciel;
+            }
+            cout<<endl;
+            cout<<"    ";
+            for(int k=0;k<5;k++)
+            {
+                if(Plan[Klasy[i]][DniTyg[k]][j].przedmiot=="") cout<<left<<setw(22)<<"brak";
+                else cout<<left<<setw(22)<<Plan[Klasy[i]][DniTyg[k]][j].przedmiot;
+            }
+            cout<<endl;
+        }
+    }
+}
+
 int main(){
+    srand(time(NULL)); /// umożliwia generowanie liczb losowych
+
     OdczytZpliku();
     WypiszListeNaucz();
+    map <string,map<string,map<int,Lekcja>>> Plan;
+    Plan=StworzPlan();
+    cout<<ilklas<<endl;
+    WypiszPlan(Plan);
 
     return 0;
 }
