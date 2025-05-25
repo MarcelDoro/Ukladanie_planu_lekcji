@@ -126,7 +126,7 @@ map <string,map<string,map<int,Lekcja>>> StworzPlan() /// funckja tworzaca plan 
         }
         rob=rob->nast;
     }
-    
+
 
     OdczytZpliku(); /// przywróci nauczycielem ich liczbę godzin ponieważ po tej funkcji rob->Il=0 dla kazdego nauczyciela ponieważ robimy rob->Il--;
     return Plan;
@@ -259,7 +259,7 @@ int ObliczFitness(map <string,map<string,map<int,Lekcja>>> Plan) /// funkcja obl
             }
 
             if(ostlek!=-1 && poclek!=-1 && ostlek>poclek) /// jezeli sa lekcje oraz cos jest miedzy nimi
-            {                    
+            {
                 for(int l=poclek+1;l<ostlek;l++) /// do ost, poniewaz okienka nie licza sie po ostatniej lekcji
                 {
                     bool ok=true;
@@ -269,27 +269,100 @@ int ObliczFitness(map <string,map<string,map<int,Lekcja>>> Plan) /// funkcja obl
                         {
                             ok=false; /// jezeli jest lekcja to nie ma okienka
                             break; /// nie musi dalej przeszukiwac bo wiemy ze jest lekcja
-                        } 
+                        }
                     }
                     if(ok==true) fitness++;/// jezeli jest przerwa to dodajemy 1 do fitnessu
-                }                    
+                }
             }
         }
     }
-    
+
     return fitness;
 }
 
+void Swap(Lekcja &L1,Lekcja &L2)
+{
+    Lekcja temp; /// tworzymy zmienną tymczasową
+    temp=L1; /// kopiujemy pierwszą lekcje do zmiennej tymczasowej
+    L1=L2; /// kopiujemy drugą lekcje do pierwszej
+    L2=temp; /// kopiujemy zmienną tymczasową do drugiej lekcji
+}
+
+map <string,map<string,map<int,Lekcja>>> ScalPlany(map <string,map<string,map<int,Lekcja>>> P1,map <string,map<string,map<int,Lekcja>>> P2)
+{
+    map <string,map<string,map<int,Lekcja>>> Plan;
+    int p=rand()%(5* MaksIlGodz); /// losujemy punkt podzialu
+
+    for(int i=0;i<ilklas;i++) /// przechodzimy po wszystkich klasach
+    {
+        for(int j=0;j<5;j++) /// przechodzimy po wszystkich dniach tygodnia
+        {
+            for(int k=0;k<MaksIlGodz;k++) /// przechodzimy po wszystkich lekcjach
+            {
+               if(j*5+k<p) /// jezeli jestesmy przed punktem podzialu
+               {
+                    Plan[Klasy[i]][DniTyg[j]][k].nauczyciel=P1[Klasy[i]][DniTyg[j]][k].nauczyciel; /// kopiujemy nauczyciela z pierwszego planu
+                    Plan[Klasy[i]][DniTyg[j]][k].przedmiot=P1[Klasy[i]][DniTyg[j]][k].przedmiot; /// kopiujemy przedmiot z pierwszego planu
+               }
+               else /// jezeli jestesmy po punkcie podzialu
+               {
+                    Plan[Klasy[i]][DniTyg[j]][k].nauczyciel=P2[Klasy[i]][DniTyg[j]][k].nauczyciel; /// kopiujemy nauczyciela z drugiego planu
+                    Plan[Klasy[i]][DniTyg[j]][k].przedmiot=P2[Klasy[i]][DniTyg[j]][k].przedmiot; /// kopiujemy przedmiot z drugiego planu
+               }
+            }
+        }
+    }
+
+    /// teraz robimy losowa mutacje
+
+    int k1=rand()%ilklas; /// losujemy pierwsza klase
+    int k2=rand()%ilklas; /// losujemy druga klase
+    int m1=rand()%(5* MaksIlGodz); /// losujemy pierwszy punkt mutacji
+    int m2=rand()%(5* MaksIlGodz); /// losujemy drugi punkt mutacji
+    Swap(Plan[Klasy[k1]][DniTyg[m1/MaksIlGodz]][m1%MaksIlGodz],Plan[Klasy[k2]][DniTyg[m2/MaksIlGodz]][m2%MaksIlGodz]); /// zamieniamy lekcje w planie
+
+    return Plan;
+}
+
+
 int main(){
     srand(time(NULL)); /// umożliwia generowanie liczb losowych
-
     OdczytZpliku(true);
-    WypiszListeNaucz();
-    map <string,map<string,map<int,Lekcja>>> Plan;
-    Plan=StworzPlan();
-    cout<<ilklas<<endl;
-    WypiszPlan(Plan);
-    cout<<ObliczFitness(Plan)<<endl;
+
+    map <string,map<string,map<int,Lekcja>>> Plany[10];
+    for(int j=0;j<10;j++)
+    {
+        Plany[j]=StworzPlan();
+    }
+
+    int k=0;
+    while(ObliczFitness(Plany[0])>5)
+    {
+        if(k>2000)
+        {
+            k=0;
+            for(int j=0;j<10;j++)
+            {
+                Plany[j]=StworzPlan();
+            }
+        }
+
+        map <string,map<string,map<int,Lekcja>>> P;
+        P=ScalPlany(Plany[rand()%10],Plany[rand()%10]);
+        int fitP=ObliczFitness(P);
+        for(int j=0;j<10;j++)
+        {
+            if(fitP<ObliczFitness(Plany[j]))
+            {
+                Plany[j]=P;
+                break;
+            }
+        }
+        k++;
+        if(k%200==0) {cout<<k<<endl; cout<<ObliczFitness(Plany[0])<<endl;}
+    }
+    cout<<ObliczFitness(Plany[0])<<endl;
+    WypiszPlan(Plany[0]);
 
     return 0;
 }
