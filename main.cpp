@@ -288,6 +288,77 @@ void Swap(Lekcja &L1,Lekcja &L2)
     L2=temp; /// kopiujemy zmienną tymczasową do drugiej lekcji
 }
 
+struct Konflikt{
+    string rodzaj; /// rodzaj konfliktu
+    string kl; /// klasa
+    string dzien; /// dzien
+    int godz; /// godzina
+    string nauczyciel; /// nauczyciel
+};
+
+vector <Konflikt> KonfliktyPodLek(map <string,map<string,map<int,Lekcja>>> P)
+{
+    const int maxKon=20; /// maksymalna liczba konfliktów
+    set<string> unauczyciele; /// zbior unikalnych nauczycieli
+    ListaNauiPrzed *rob=pierwszy; /// zaczynamy od pierwszego nauczyciela
+    while(rob!=NULL) /// dopoki nie doszlismy do konca listy nauczycieli
+    {
+        unauczyciele.insert(rob->ImiNaz); /// dodajemy nauczyciela do zbioru
+        rob=rob->nast; /// przechodzimy do nastepnego nauczyciela
+    }
+
+    for(string n: unauczyciele)
+    {
+        for(int j=0;j<5;j++) /// przechodzimy po wszystkich dniach tygodnia
+        {
+            for(int k=0;k<MaksIlGodz;k++) /// przechodzimy po wszystkich lekcjach
+            {
+                int ilg=0; /// ilosc lekcji nauczyciela w tym samym czasie
+                for(int i=0;i<ilklas;i++) if(P[Klasy[i]][DniTyg[j]][k].nauczyciel==n)
+                {
+                    ilg++; /// zliczamy ilosc lekcji nauczyciela w tym samym czasie
+                    if(ilg>1) /// jezeli nauczyciel ma wiecej niz 1 lekcje w tym samym czasie
+                    {
+                        konflikty.push_back({"Podwojna lekcja", Klasy[i], DniTyg[j], k, n}); /// dodajemy konflikt do wektora
+                    }
+                    if(konflikty.size()>=maxKon) /// jezeli przekroczono maksymalna liczbe konfliktów
+                    {
+                        return konflikty; /// zwracamy wektor konfliktów
+                    }
+                }
+            }
+        }
+
+    }
+
+    return konflikty;
+}
+
+void Mutuj(map <string,map<string,map<int,Lekcja>>> &P, vector<Konflikt> &konflikty) 
+{
+    if(konflikty.size()==0) return; /// jezeli nie ma konfliktów to nie ma co mutowac
+    int n=rand()%konflikty.size(); /// losujemy konflikt
+
+    if(konflikty[n].rodzaj=="Podwojna lekcja")
+    {
+        bool swapped = false;
+        for(int tries=0; tries<100 && !swapped; ++tries) {
+            int nrkl=rand()%ilklas;
+            int nrdnia=rand()%5;
+            int nrlek=rand()%MaksIlGodz;
+            // Check if the teacher is free at this time in all classes
+            bool free = true;
+            for(int i=0;i<ilklas;i++)
+                if(P[Klasy[i]][DniTyg[nrdnia]][nrlek].nauczyciel==konflikty[n].nauczyciel)
+                    free = false;
+            if(free && P[Klasy[nrkl]][DniTyg[nrdnia]][nrlek].nauczyciel=="") {
+                Swap(P[Klasy[nrkl]][DniTyg[nrdnia]][nrlek],P[konflikty[n].kl][konflikty[n].dzien][konflikty[n].godz]);
+                swapped = true;
+            }
+        }
+    }
+}
+
 map <string,map<string,map<int,Lekcja>>> ScalPlany(map <string,map<string,map<int,Lekcja>>> P1,map <string,map<string,map<int,Lekcja>>> P2)
 {
     map <string,map<string,map<int,Lekcja>>> Plan;
@@ -321,6 +392,15 @@ map <string,map<string,map<int,Lekcja>>> ScalPlany(map <string,map<string,map<in
     int m2=rand()%(5* MaksIlGodz); /// losujemy drugi punkt mutacji
     Swap(Plan[Klasy[k1]][DniTyg[m1/MaksIlGodz]][m1%MaksIlGodz],Plan[Klasy[k2]][DniTyg[m2/MaksIlGodz]][m2%MaksIlGodz]); /// zamieniamy lekcje w planie
 
+    /// teraz robimy losowa mutacje , ktora usuwa jakis konflikt polegajacy na tym ze nauczyciel ma dwie lekcje w tym samym czasie
+    konflikty=KonfliktyPodLek(Plan); /// sprawdzamy konflikty nauczyciela posaidajacego 2 lekcji w tym samym czasie
+    for(int i=0;i<konflikty.size()/10;i++) /// wykonujemy mutacje 1/5 konfliktów
+    {
+        Mutuj(Plan,konflikty); /// wykonujemy mutacje
+        konflikty=KonfliktyPodLek(Plan); /// sprawdzamy konflikty nauczyciela posaidajacego 2 lekcji w tym samym czasie
+    }
+        
+
     return Plan;
 }
 
@@ -336,7 +416,8 @@ int main(){
     }
 
     int k=0;
-    while(ObliczFitness(Plany[0])>5)
+    int iter=0; /// liczba iteracji
+    while(ObliczFitness(Plany[0])>5 && iter<1000)
     {
         if(k>2000)
         {
@@ -359,7 +440,8 @@ int main(){
             }
         }
         k++;
-        if(k%200==0) {cout<<k<<endl; cout<<ObliczFitness(Plany[0])<<endl;}
+        iter++;
+        if(k%2==0) {cout<<k<<endl; cout<<ObliczFitness(Plany[0])<<endl;}
     }
     cout<<ObliczFitness(Plany[0])<<endl;
     WypiszPlan(Plany[0]);
