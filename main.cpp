@@ -298,6 +298,7 @@ struct Konflikt{
 
 vector <Konflikt> KonfliktyPodLek(map <string,map<string,map<int,Lekcja>>> P)
 {
+    vector <Konflikt> konflikty; /// wektor konfliktów
     const int maxKon=20; /// maksymalna liczba konfliktów
     set<string> unauczyciele; /// zbior unikalnych nauczycieli
     ListaNauiPrzed *rob=pierwszy; /// zaczynamy od pierwszego nauczyciela
@@ -334,6 +335,39 @@ vector <Konflikt> KonfliktyPodLek(map <string,map<string,map<int,Lekcja>>> P)
     return konflikty;
 }
 
+vector <Konflikt> KonfliktyOkiUcz(map <string,map<string,map<int,Lekcja>>> P, vector <Konflikt> K)
+{
+    int ilkon=0; /// maksymalna liczba konfliktów
+    for(int i=0;i<ilklas;i++) /// przechodzimy po wszystkich klasach
+    {
+        for(int j=0;j<5;j++) /// przechodzimy po wszystkich dniach tygodnia
+        {
+            int poc=-1; /// poczatkowa lekcja danego dnia
+            int ost=-1; /// ostatnia lekcja danego dnia
+            for(int k=0;k<MaksIlGodz;k++) /// przechodzimy po wszystkich lekcjach
+            {
+                if(poc==-1 && P[Klasy[i]][DniTyg[j]][k].nauczyciel!="") poc=k; /// jezeli nie ma pierwszej lekcji to ja dodaj
+                ost=k;
+            }
+
+            for(int k=0;k<ost;k++)
+            {
+                if(P[Klasy[i]][DniTyg[j]][k].nauczyciel=="" && k>poc && k<ost) /// jezeli jest przerwa
+                {
+                    K.push_back({"Okienko uczniow", Klasy[i], DniTyg[j], k, P[Klasy[i]][DniTyg[j]][k].nauczyciel}); /// dodajemy konflikt do wektora
+                    ilkon++; /// zwiekszamy liczbe konfliktów
+                    if(ilkon>=20) /// jezeli przekroczono maksymalna liczbe konfliktów
+                    {
+                        return K; /// zwracamy wektor konfliktów
+                    }
+                }              
+            }
+        }
+    }
+
+    return K;
+}
+
 void Mutuj(map <string,map<string,map<int,Lekcja>>> &P, vector<Konflikt> &konflikty) 
 {
     if(konflikty.size()==0) return; /// jezeli nie ma konfliktów to nie ma co mutowac
@@ -354,6 +388,39 @@ void Mutuj(map <string,map<string,map<int,Lekcja>>> &P, vector<Konflikt> &konfli
             if(free && P[Klasy[nrkl]][DniTyg[nrdnia]][nrlek].nauczyciel=="") {
                 Swap(P[Klasy[nrkl]][DniTyg[nrdnia]][nrlek],P[konflikty[n].kl][konflikty[n].dzien][konflikty[n].godz]);
                 swapped = true;
+            }
+        }
+    }
+    else if(konflikty[n].rodzaj=="Okienko uczniow")
+    {
+        int c=rand()%2; /// losujemy czy bedziemy brac lekcje od koncza czy od poczatku dnia
+        int poc=-1;
+        int ost=-1;
+        for(int k=0;k<MaksIlGodz;k++)
+        {
+            if(poc==-1 && P[konflikty[n].kl][konflikty[n].dzien][k].nauczyciel!="") poc=k; 
+            ost=k;
+        }
+        if(c==0)
+        {
+            for(int k=0;k<MaksIlGodz;k++)
+            {
+                if(P[konflikty[n].kl][konflikty[n].dzien][k].nauczyciel=="") /// jezeli jest przerwa
+                {
+                    Swap(P[konflikty[n].kl][konflikty[n].dzien][k],P[konflikty[n].kl][konflikty[n].dzien][poc]); /// zamieniamy lekcje
+                    break;
+                }
+            }
+        }
+        else
+        {
+            for(int k=MaksIlGodz-1;k>=0;k--)
+            {
+                if(P[konflikty[n].kl][konflikty[n].dzien][k].nauczyciel=="") /// jezeli jest przerwa
+                {
+                    Swap(P[konflikty[n].kl][konflikty[n].dzien][k],P[konflikty[n].kl][konflikty[n].dzien][ost]); /// zamieniamy lekcje
+                    break;
+                }
             }
         }
     }
@@ -393,7 +460,7 @@ map <string,map<string,map<int,Lekcja>>> ScalPlany(map <string,map<string,map<in
     Swap(Plan[Klasy[k1]][DniTyg[m1/MaksIlGodz]][m1%MaksIlGodz],Plan[Klasy[k2]][DniTyg[m2/MaksIlGodz]][m2%MaksIlGodz]); /// zamieniamy lekcje w planie
 
     /// teraz robimy losowa mutacje , ktora usuwa jakis konflikt polegajacy na tym ze nauczyciel ma dwie lekcje w tym samym czasie
-    konflikty=KonfliktyPodLek(Plan); /// sprawdzamy konflikty nauczyciela posaidajacego 2 lekcji w tym samym czasie
+    vector <Konflikt> konflikty=KonfliktyPodLek(Plan); /// sprawdzamy konflikty nauczyciela posaidajacego 2 lekcji w tym samym czasie
     for(int i=0;i<konflikty.size()/10;i++) /// wykonujemy mutacje 1/5 konfliktów
     {
         Mutuj(Plan,konflikty); /// wykonujemy mutacje
