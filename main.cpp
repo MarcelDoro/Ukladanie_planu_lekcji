@@ -346,8 +346,11 @@ vector <Konflikt> KonfliktyOkiUcz(map <string,map<string,map<int,Lekcja>>> P, ve
             int ost=-1; /// ostatnia lekcja danego dnia
             for(int k=0;k<MaksIlGodz;k++) /// przechodzimy po wszystkich lekcjach
             {
-                if(poc==-1 && P[Klasy[i]][DniTyg[j]][k].nauczyciel!="") poc=k; /// jezeli nie ma pierwszej lekcji to ja dodaj
-                ost=k;
+                if(P[Klasy[i]][DniTyg[j]][k].nauczyciel!="")
+                {
+                    if(poc==-1) poc=k;
+                    ost=k;
+                }
             }
 
             for(int k=0;k<ost;k++)
@@ -360,7 +363,7 @@ vector <Konflikt> KonfliktyOkiUcz(map <string,map<string,map<int,Lekcja>>> P, ve
                     {
                         return K; /// zwracamy wektor konfliktów
                     }
-                }              
+                }
             }
         }
     }
@@ -368,7 +371,7 @@ vector <Konflikt> KonfliktyOkiUcz(map <string,map<string,map<int,Lekcja>>> P, ve
     return K;
 }
 
-void Mutuj(map <string,map<string,map<int,Lekcja>>> &P, vector<Konflikt> &konflikty) 
+void Mutuj(map <string,map<string,map<int,Lekcja>>> &P, vector<Konflikt> &konflikty)
 {
     if(konflikty.size()==0) return; /// jezeli nie ma konfliktów to nie ma co mutowac
     int n=rand()%konflikty.size(); /// losujemy konflikt
@@ -398,7 +401,7 @@ void Mutuj(map <string,map<string,map<int,Lekcja>>> &P, vector<Konflikt> &konfli
         int ost=-1;
         for(int k=0;k<MaksIlGodz;k++)
         {
-            if(poc==-1 && P[konflikty[n].kl][konflikty[n].dzien][k].nauczyciel!="") poc=k; 
+            if(poc==-1 && P[konflikty[n].kl][konflikty[n].dzien][k].nauczyciel!="") poc=k;
             ost=k;
         }
         if(c==0)
@@ -461,12 +464,13 @@ map <string,map<string,map<int,Lekcja>>> ScalPlany(map <string,map<string,map<in
 
     /// teraz robimy losowa mutacje , ktora usuwa jakis konflikt polegajacy na tym ze nauczyciel ma dwie lekcje w tym samym czasie
     vector <Konflikt> konflikty=KonfliktyPodLek(Plan); /// sprawdzamy konflikty nauczyciela posaidajacego 2 lekcji w tym samym czasie
-    for(int i=0;i<konflikty.size()/10;i++) /// wykonujemy mutacje 1/5 konfliktów
+    for(int i=0;i<konflikty.size()%5;i++) /// wykonujemy mutacje 1/5 konfliktów
     {
         Mutuj(Plan,konflikty); /// wykonujemy mutacje
         konflikty=KonfliktyPodLek(Plan); /// sprawdzamy konflikty nauczyciela posaidajacego 2 lekcji w tym samym czasie
+        konflikty=KonfliktyOkiUcz(Plan, konflikty); /// sprawdzamy konflikty okienek uczniow
     }
-        
+
 
     return Plan;
 }
@@ -484,9 +488,9 @@ int main(){
 
     int k=0;
     int iter=0; /// liczba iteracji
-    while(ObliczFitness(Plany[0])>5 && iter<1000)
+    while(ObliczFitness(Plany[0])>5 && iter<100000)
     {
-        if(k>2000)
+        if(k>20000)
         {
             k=0;
             for(int j=0;j<10;j++)
