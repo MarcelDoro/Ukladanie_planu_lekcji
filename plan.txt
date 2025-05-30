@@ -1,0 +1,34 @@
+1A
+Adam Abacki           Brak                  Brak                  Brak                  Brak                  
+ matematyka            brak                  brak                  brak                  brak                  
+Adam Abacki           Brak                  Brak                  Brak                  Brak                  
+ matematyka            brak                  brak                  brak                  brak                  
+Adam Abacki           Brak                  Brak                  Brak                  Brak                  
+ matematyka            brak                  brak                  brak                  brak                  
+Bartosz Babacki       Celina Cacacka        Adam Abacki           Ela Elacka            Celina Cacacka        
+ fizyka                j.polski              matematyka            biologia              polski                
+Brak                  Dawid Dadacki         Brak                  Brak                  Celina Cacacka        
+ brak                  wf                    brak                  brak                  j.polski              
+Brak                  Ela Elacka            Brak                  Brak                  Brak                  
+ brak                  biologia              brak                  brak                  brak                  
+Brak                  Brak                  Brak                  Brak                  Brak                  
+ brak                  brak                  brak                  brak                  brak                  
+Brak                  Bartosz Babacki       Brak                  Brak                  Brak                  
+ brak                  fizyka                brak                  brak                  brak                  
+1B
+Brak                  Brak                  Celina Cacacka        Brak                  Brak                  
+ brak                  brak                  polski                brak                  brak                  
+Celina Cacacka        Brak                  Brak                  Brak                  Brak                  
+ polski                brak                  brak                  brak                  brak                  
+Brak                  Brak                  Brak                  Brak                  Celina Cacacka        
+ brak                  brak                  brak                  brak                  j.polski              
+Brak                  Brak                  Brak                  Brak                  Adam Abacki           
+ brak                  brak                  brak                  brak                  matematyka            
+Brak                  Brak                  Brak                  Celina Cacacka        Adam Abacki           
+ brak                  brak                  brak                  polski                matematyka            
+Brak                  Brak                  Brak                  Brak                  Dawid Dadacki         
+ brak                  brak                  brak                  brak                  wf                    
+Brak                  Brak                  Brak                  Brak                  Brak                  
+ brak                  brak                  brak                  brak                  brak                  
+Brak                  Brak                  Brak                  Brak                  Brak                  
+ brak                  brak                  brak                  brak                  brak                  

@@ -5,6 +5,7 @@
 #include <vector>
 #include <iomanip>
 #include <set>
+#include <conio.h>
 
 using namespace std;
 
@@ -475,6 +476,66 @@ map <string,map<string,map<int,Lekcja>>> ScalPlany(map <string,map<string,map<in
     return Plan;
 }
 
+void ZapisDoPliku(map <string,map<string,map<int,Lekcja>>> Plan) /// funkcja zapisujaca plan do pliku
+{
+    ofstream plik;
+    plik.open("plan.txt");
+
+    if(plik.good()) /// jezeli plik sie otworzyl
+    {
+        char zn;
+        cout<<"Czy chcesz nadpisać plik (T/N)?"<<endl;
+        zn=getch(); /// wczytujemy znak z klawiatury
+        if(zn=='T' || zn=='t')
+        {
+            for(int i=0;i<ilklas;i++)
+            {
+                plik<<Klasy[i]<<endl;
+                for(int j=0;j<MaksIlGodz;j++)
+                {
+                    for(int k=0;k<5;k++)
+                    {
+                        if(Plan[Klasy[i]][DniTyg[k]][j].nauczyciel=="") plik<<left<<setw(22)<<"Brak";
+                        else plik<<left<<setw(22)<<Plan[Klasy[i]][DniTyg[k]][j].nauczyciel;
+                    }
+                    plik<<endl;
+                    plik<<" ";
+                    for(int k=0;k<5;k++)
+                    {
+                        if(Plan[Klasy[i]][DniTyg[k]][j].przedmiot=="") plik<<left<<setw(22)<<"brak";
+                        else plik<<left<<setw(22)<<Plan[Klasy[i]][DniTyg[k]][j].przedmiot;
+                    }
+                    plik<<endl;
+                }
+            }
+        }
+        else cout<<"Nie nadpisano pliku"<<endl;
+    }
+    else
+    {
+        for(int i=0;i<ilklas;i++)
+            {
+                plik<<Klasy[i]<<endl;
+                for(int j=0;j<MaksIlGodz;j++)
+                {
+                    for(int k=0;k<5;k++)
+                    {
+                        if(Plan[Klasy[i]][DniTyg[k]][j].nauczyciel=="") plik<<left<<setw(22)<<"Brak";
+                        else plik<<left<<setw(22)<<Plan[Klasy[i]][DniTyg[k]][j].nauczyciel;
+                    }
+                    plik<<endl;
+                    plik<<" ";
+                    for(int k=0;k<5;k++)
+                    {
+                        if(Plan[Klasy[i]][DniTyg[k]][j].przedmiot=="") plik<<left<<setw(22)<<"brak";
+                        else plik<<left<<setw(22)<<Plan[Klasy[i]][DniTyg[k]][j].przedmiot;
+                    }
+                    plik<<endl;
+                }
+            }
+    }
+    plik.close();
+}
 
 int main(){
     srand(time(NULL)); /// umożliwia generowanie liczb losowych
@@ -488,7 +549,7 @@ int main(){
 
     int k=0;
     int iter=0; /// liczba iteracji
-    while(ObliczFitness(Plany[0])>5 && iter<100000)
+    while(ObliczFitness(Plany[0])>30 && iter<100000)
     {
         if(k>20000)
         {
@@ -512,8 +573,9 @@ int main(){
         }
         k++;
         iter++;
-        if(k%2==0) {cout<<k<<endl; cout<<ObliczFitness(Plany[0])<<endl;}
+        if(k%10==0) {cout<<k<<endl; cout<<ObliczFitness(Plany[0])<<endl;}
     }
+    ZapisDoPliku(Plany[0]); /// zapisujemy plan do pliku
     cout<<ObliczFitness(Plany[0])<<endl;
     WypiszPlan(Plany[0]);
 
