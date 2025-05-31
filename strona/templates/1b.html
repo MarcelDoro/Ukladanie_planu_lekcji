@@ -2,10 +2,57 @@
 	<head>
 		<meta charset="UTF-8">
 		<title> Plan klasy 1B </title>
+		<style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: center; }
+        th { background: #eee; }
+    </style>
 	</head>
-	
 	<body>
 		<h1> Oto plan klasy 1B </h1>
+		<table>
+			<tr>
+				<td>Godzina</td>
+				<td>Poniedziałek</td>
+				<td>Wtorek</td>
+				<td>Środa</td>
+				<td>Czwartek</td>
+				<td>Piątek</td>
+			</tr>
+
+			{% for g in range(0, 8) %}
+				<tr>
+					<td>{{g+1}}</td>
+					<td>
+						<strong>{{plan[g][0][0]}}</strong>
+						<br>
+						<small>{{plan[g][0][1]}}</small>
+					</td>
+					<td>
+						<strong>{{plan[g][1][0]}}</strong>
+						<br>
+						<small>{{plan[g][1][1]}}</small>
+					</td>
+					<td>
+						<strong>{{plan[g][2][0]}}</strong>
+						<br>
+						<small>{{plan[g][2][1]}}</small>
+					</td>
+					<td>
+						<strong>{{plan[g][3][0]}}</strong>
+						<br>
+						<small>{{plan[g][3][1]}}</small>
+					</td>
+					<td>
+						<strong>{{plan[g][4][0]}}</strong>
+						<br>
+						<small>{{plan[g][4][1]}}</small>
+					</td>
+
+
+				</tr>
+			{% endfor %}
+		</table>
 		<a href="/">Powrót</a>
 	</body>
 </html>
